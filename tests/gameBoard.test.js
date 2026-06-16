@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import GameBoard from "../src/gameBoard.js";
 import Ship from "../src/ship.js";
 
@@ -30,7 +29,7 @@ test("receiveAttack hits a coordinate with no ship", () => {
   board.placeShip(ship, [0, 0], "horizontal");
   board.receiveAttack([5, 5]);
 
-  expect(board.misses).toContain([5, 5]);
+  expect(board.misses).toContainEqual([5, 5]);
 });
 
 test("receiveAttack does not hit twice on the same coordinate", () => {
@@ -68,4 +67,29 @@ test("allSunk returns false when not all ships are sunk", () => {
   board.receiveAttack([0, 0]);
 
   expect(board.allSunk()).toBe(false);
+});
+
+test("placeShip generates correct horizontal coordinates", () => {
+  const board = new GameBoard();
+  const ship = new Ship(3);
+  board.placeShip(ship, [2, 4], "horizontal");
+
+  expect(ship.positions).toEqual([
+    [2, 4],
+    [3, 4],
+    [4, 4],
+  ]);
+});
+
+test("placeShip generates correct vertical coordinates", () => {
+  const board = new GameBoard();
+  const ship = new Ship(3);
+
+  board.placeShip(ship, [2, 4], "vertical");
+
+  expect(ship.positions).toEqual([
+    [2, 4],
+    [2, 5],
+    [2, 6],
+  ]);
 });
