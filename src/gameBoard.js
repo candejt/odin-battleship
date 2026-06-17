@@ -16,7 +16,7 @@ export default class GameBoard {
     }
     if (orientation === "vertical") {
       for (let i = 0; i < ship.length; i++) {
-        positions.push(x, y + i);
+        positions.push([x, y + i]);
       }
     }
     ship.positions = positions;
@@ -24,23 +24,48 @@ export default class GameBoard {
   }
 
   receiveAttack(coord) {
-    const key = coord.toString();
-
-    if (this.attacked.has(key)) return;
-    this.attacked.add(key);
-
     const [x, y] = coord;
 
-    for (const ship of this.ships) {
-      if (ship.start && ship.start[0] === x && ship.start[1] === y) {
-        ship.hit();
+    for (let i = 0; i < this.misses.length; i++) {
+      const miss = this.misses[i];
+      if (miss[0] === x && miss[1] === y) {
         return;
+      }
+    }
+
+    for (let i = 0; i < this.ships.length; i++) {
+      const ship = this.ships[i];
+      if (!ship.hitsPositions) {
+        ship.hitsPositions = [];
+      }
+      for (let j = 0; j < ship.hitsPositions.length; j++) {
+        const hit = ship.hitsPositions[j];
+        if (hit[0] === x && hit[1] === y) {
+          return;
+        }
+      }
+      for (let p = 0; p < ship.positions.length; p++) {
+        const pos = ship.positions[p];
+        if (pos[0] === x && pos[1] === y) {
+          ship.hit();
+          ship.hitsPositions.push(coord);
+
+          ship.isSunk();
+
+          return;
+        }
       }
     }
     this.misses.push(coord);
   }
 
   allSunk() {
-    return this.ships.every((ship) => ship.isSunk());
+    for (let i = 0; i < this.ships.length; i++) {
+      const ship = this.ships[i];
+      if (!ship.isSunk()) {
+        return false;
+      }
+    }
+    return true;
   }
 }
