@@ -4,20 +4,29 @@ export default class GameBoard {
     this.ships = [];
     this.misses = [];
     this.attacked = new Set();
+    this.grid = Array.from({ length: 10 }, () => Array(10).fill(null));
   }
 
   placeShip(ship, start, orientation) {
     const [x, y] = start;
     const positions = [];
-    if (orientation === "horizontal") {
-      for (let i = 0; i < ship.length; i++) {
-        positions.push([x + i, y]);
+
+    for (let i = 0; i < ship.length; i++) {
+      const cx = orientation === "horizontal" ? x + i : x;
+      const cy = orientation === "vertical" ? y + i : y;
+
+      if (cx < 0 || cx > 9 || cy < 0 || cy > 9) {
+        throw new Error("Ship out of bounds");
       }
+
+      if (this.grid[cx][cy] !== null) {
+        throw new Error("Ship overlap");
+      }
+
+      positions.push([cx, cy]);
     }
-    if (orientation === "vertical") {
-      for (let i = 0; i < ship.length; i++) {
-        positions.push([x, y + i]);
-      }
+    for (const [cx, cy] of positions) {
+      this.grid[cx][cy] = ship;
     }
     ship.positions = positions;
     this.ships.push(ship);

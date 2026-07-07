@@ -33,5 +33,4 @@ class Computer {
     return false;
   }
 }
-
 export { Player, Computer };

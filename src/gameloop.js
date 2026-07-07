@@ -2,6 +2,8 @@ import Ship from "./ship.js";
 
 export default function gameLoop(player, cpu, playerBoard, cpuBoard) {
   const loop = {};
+  loop.currentPlayer = player;
+  loop.winner = null;
 
   loop.setupBoards = () => {
     const shipLengths = [5, 4, 3, 3, 2];
@@ -24,6 +26,24 @@ export default function gameLoop(player, cpu, playerBoard, cpuBoard) {
     };
     placeRandomShips(playerBoard);
     placeRandomShips(cpuBoard);
+  };
+
+  loop.nextTurn = () => {
+    loop.currentPlayer = loop.currentPlayer === player ? cpu : player;
+  };
+
+  loop.playTurn = (x, y) => {
+    if (loop.winner) return;
+
+    const targetBoard = loop.currentPlayer === player ? cpuBoard : playerBoard;
+
+    targetBoard.receiveAttack([x, y]);
+
+    if (targetBoard.allSunk()) {
+      loop.winner = player;
+      return;
+    }
+    loop.nextTurn();
   };
   return loop;
 }
