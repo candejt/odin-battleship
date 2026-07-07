@@ -130,3 +130,26 @@ test("playTurn does not switch turns if there is a winner", () => {
   loop.playTurn(0, 0);
   expect(loop.currentPlayer).toBe(turnBefore);
 });
+
+test("GameLoop prevents further actions after the game is over", () => {
+  const playerBoard = new GameBoard();
+  const cpuBoard = new GameBoard();
+  const player = new Player("human");
+  const cpu = new Player("cpu");
+
+  const loop = gameLoop(player, cpu, playerBoard, cpuBoard);
+
+  loop.setupBoards();
+
+  for (const ship of cpuBoard.ships) {
+    for (const [x, y] of ship.positions) {
+      loop.currentPlayer = player;
+      loop.playTurn(x, y);
+    }
+  }
+  expect(loop.winner).toBe(player);
+
+  const turnBefore = loop.currentPlayer;
+  loop.playTurn(0, 0);
+  expect(loop.currentPlayer).toBe(turnBefore);
+});
