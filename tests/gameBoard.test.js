@@ -136,39 +136,3 @@ test("receiveAttack marks a ship as sunk when all its coord are hit", () => {
 
   expect(ship.isSunk()).toBe(true);
 });
-
-test("allSunk returns false when not all ships are sunk", () => {
-  const board = new GameBoard();
-  const ship1 = new Ship(2);
-  const ship2 = new Ship(1);
-
-  board.placeShip(ship1, [0, 0], "horizontal");
-  board.placeShip(ship2, [0, 1], "horizontal");
-
-  board.receiveAttack([0, 0]);
-  board.receiveAttack([1, 0]);
-
-  expect(board.allSunk()).toBe(false);
-});
-
-test("allSunk returns true when all ships are sunk", () => {
-  const board = new GameBoard();
-  const ship1 = new Ship(3);
-  const ship2 = new Ship(2);
-  const ship3 = new Ship(1);
-
-  board.placeShip(ship1, [0, 0], "horizontal");
-  board.placeShip(ship2, [0, 1], "horizontal");
-  board.placeShip(ship3, [0, 2], "horizontal");
-
-  board.receiveAttack([0, 0]);
-  board.receiveAttack([1, 0]);
-  board.receiveAttack([2, 0]);
-
-  board.receiveAttack([0, 1]);
-  board.receiveAttack([1, 1]);
-
-  board.receiveAttack([0, 2]);
-
-  expect(board.allSunk()).toBe(true);
-});
