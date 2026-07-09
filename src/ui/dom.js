@@ -1,6 +1,21 @@
 import GameBoard from "../gameBoard.js";
 import gameLoop from "../gameloop.js";
 import { Player, Computer } from "../player.js";
+
+const rotateBtn = document.createElement("button");
+rotateBtn.id = "rotate-btn";
+rotateBtn.textContent = "Rotate";
+document.body.appendChild(rotateBtn);
+
+const winnerMsg = document.createElement("div");
+winnerMsg.id = "winner-message";
+document.body.appendChild(winnerMsg);
+
+const resetBtn = document.createElement("button");
+resetBtn.id = "reset-btn";
+resetBtn.textContent = "Reset";
+document.body.appendChild(resetBtn);
+
 //render boards
 function createPlayerGrid(container) {
   for (let y = 0; y < 10; y++) {
@@ -150,11 +165,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-const rotateBtn = document.createElement("button");
-rotateBtn.id = "rotate-btn";
-rotateBtn.textContent = "Rotate";
-document.body.appendChild(rotateBtn);
-
 rotateBtn.addEventListener("click", () => {
   placementState.orientation =
     placementState.orientation === "horizontal" ? "vertical" : "horizontal";
@@ -209,6 +219,8 @@ function clearHoverPreview(container) {
 cpuContainer.addEventListener("click", handlePlayerShot);
 
 function handlePlayerShot(event) {
+  if (loop.winner) return;
+
   const cell = event.target;
   if (!cell.classList.contains("cell")) return;
 
@@ -224,6 +236,12 @@ function handlePlayerShot(event) {
 
   renderCpuBoard(cpuBoard, cpuContainer);
   renderPlayerBoard(playerBoard, playerContainer);
+
+  if (loop.winner) {
+    const msg = document.getElementById("winner-message");
+    msg.textContent = loop.winner === player ? "You win!" : "You lose!";
+    return;
+  }
 }
 
 function isShipSunk(board, x, y) {
@@ -257,4 +275,42 @@ function isShipSunk(board, x, y) {
     }
   }
   return shipCells.every((cell) => board.grid[cell.y][cell.x].isHit);
+}
+
+//reset
+resetBtn.addEventListener("click", resetGame);
+
+function resetGame() {
+  winnerMsg.textContent = "";
+
+  const newPlayerBoard = new GameBoard();
+  const newCpuBoard = new GameBoard();
+  const newPlayer = new Player("human");
+  const newCpu = new Computer("cpu");
+
+  const newLoop = gameLoop(newPlayer, newCpu, newPlayerBoard, newCpuBoard);
+
+  playerBoard = newPlayerBoard;
+  cpuBoard = newCpuBoard;
+  player = newPlayer;
+  cpu = newCpu;
+  loop = newLoop;
+
+  newCpuBoard.placeRandomShips();
+
+  renderPlayerBoard(playerBoard, playerContainer);
+  renderCpuBoard(cpuBoard, cpuContainer);
+
+  enableManualPlacement();
+}
+
+function enableManualPlacement() {
+  placementState.currentShipIndex = 0;
+  placementState.orientation = "horizontal";
+
+  playerContainer.addEventListener("click", handlePlacementClick);
+
+  setupHoverPreview(playerBoard, playerContainer);
+
+  rotateBtn.disabled = false;
 }
