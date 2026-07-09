@@ -37,12 +37,17 @@ export default function gameLoop(player, cpu, playerBoard, cpuBoard) {
 
     const targetBoard = loop.currentPlayer === player ? cpuBoard : playerBoard;
 
-    targetBoard.receiveAttack([x, y]);
+    loop.currentPlayer.attack([x, y], targetBoard);
 
-    if (targetBoard.allSunk()) {
+    if (cpuBoard.allSunk()) {
       loop.winner = player;
       return;
     }
+    if (playerBoard.allSunk()) {
+      loop.winner = cpu;
+      return;
+    }
+
     loop.nextTurn();
   };
   return loop;

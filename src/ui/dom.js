@@ -1,3 +1,6 @@
+import GameBoard from "../gameBoard.js";
+import gameLoop from "../gameloop.js";
+import { Player, Computer } from "../player.js";
 //render boards
 function createPlayerGrid(container) {
   for (let y = 0; y < 10; y++) {
@@ -200,4 +203,58 @@ function clearHoverPreview(container) {
     .forEach((cell) => {
       cell.classList.remove("preview-valid, preview-invalid");
     });
+}
+
+//show hit and miss
+cpuContainer.addEventListener("click", handlePlayerShot);
+
+function handlePlayerShot(event) {
+  const cell = event.target;
+  if (!cell.classList.contains("cell")) return;
+
+  const x = Number(cell.dataset.x);
+  const y = Number(cell.dataset.y);
+
+  loop.playTurn(x, y);
+
+  if (loop.currentPlayer === cpu) {
+    cpu.randomAttack(playerBoard);
+    renderPlayerBoard(playerBoard, playerContainer);
+  }
+
+  renderCpuBoard(cpuBoard, cpuContainer);
+  renderPlayerBoard(playerBoard, playerContainer);
+}
+
+function isShipSunk(board, x, y) {
+  const shipCells = [];
+
+  const stack = [{ x, y }];
+  const visited = new Set();
+
+  while (stack.length > 0) {
+    const { x: cx, y: cy } = stack.pop();
+    const key = `${cx},${cy}`;
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    const tile = board.grid[cy][cx];
+    if (!tile.hasShip) continue;
+
+    shipCells.push({ x: cx, y: cy });
+
+    const neighbors = [
+      { x: cx + 1, y: cy },
+      { x: cx - 1, y: cy },
+      { x: cx, y: cy + 1 },
+      { x: cx, y: cy - 1 },
+    ];
+
+    for (const n of neighbors) {
+      if (n.x >= 0 && n.x < board.size && n.y >= 0 && n.y < board.size) {
+        stack.push(n);
+      }
+    }
+  }
+  return shipCells.every((cell) => board.grid[cell.y][cell.x].isHit);
 }
