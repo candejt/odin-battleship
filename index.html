@@ -8,39 +8,44 @@
   </head>
   <body>
     <h1>Battleship</h1>
-    
+
     <div class="boards-container">
       <div>
         <h2>Your Board</h2>
 
-        <div class="fleet-status">
-        <div id="player-fleet">
-          <h3>Your fleet:</h3>
-          <div class="ships-list"></div>
+        <div class="player-sidebar">
+          <div class="fleet-status">
+            <div id="player-fleet">
+              <h3>Fleet:</h3>
+              <div class="ships-list"></div>
+            </div>
+          </div>
+
+          <div class="player-actions">
+            <button id="rotate-btn">Rotate Ships</button>
+            <button id="reset-btn">Reset Game</button>
+          </div>
         </div>
-      </div>
 
         <div id="player-container"></div>
       </div>
 
       <div>
-        <h2>Enemy Board</h2>
+        <h2>Opponent's Board</h2>
 
         <div class="fleet-status">
-        <div id="cpu-fleet">
-          <h3>Enemy fleet:</h3>
-          <div class="ships-list"></div>
+          <div id="cpu-fleet">
+            <h3>Fleet:</h3>
+            <div class="ships-list"></div>
+          </div>
         </div>
-      </div>
 
         <div id="cpu-container"></div>
       </div>
     </div>
 
-    <div class="button-container"></div>
-
+    <div class="game-instructions">Place your ships</div>
     <div class="winner-msg"></div>
-
 
     <script type="module" src="./src/ui/index.js"></script>
   </body>

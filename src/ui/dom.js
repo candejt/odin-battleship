@@ -16,19 +16,9 @@ let placementState = {
 };
 const ships = [{ size: 5 }, { size: 4 }, { size: 3 }, { size: 3 }, { size: 2 }];
 
-const rotateBtn = document.createElement("button");
-rotateBtn.id = "rotate-btn";
-rotateBtn.textContent = "Rotate";
-document.querySelector(".button-container").appendChild(rotateBtn);
-
-const winnerMsg = document.createElement("div");
-winnerMsg.id = "winner-message";
-document.body.appendChild(winnerMsg);
-
-const resetBtn = document.createElement("button");
-resetBtn.id = "reset-btn";
-resetBtn.textContent = "Reset";
-document.querySelector(".button-container").appendChild(resetBtn);
+const rotateBtn = document.getElementById("rotate-btn");
+const resetBtn = document.getElementById("reset-btn");
+const winnerMsg = document.querySelector(".winner-msg");
 
 //render boards
 function createPlayerGrid(container) {
@@ -152,7 +142,7 @@ function handlePlacementClick(event) {
 
   if (placementState.currentShipIndex >= ships.length) {
     playerContainer.removeEventListener("click", handlePlacementClick);
-    console.log("All ships are placed");
+    console.log("all ships are placed");
     startGame();
   }
 }
@@ -240,7 +230,14 @@ function handlePlayerShot(event) {
   renderFleetStatus(cpuBoard, "cpu-fleet");
 
   if (loop.winner) {
-    winnerMsg.textContent = loop.winner === player ? "You win!" : "You lose!";
+    document.querySelector(".game-instructions").textContent = "";
+    if (loop.winner === player) {
+      winnerMsg.textContent = "You win!";
+      winnerMsg.classList.remove("lose");
+    } else {
+      winnerMsg.textContent = "You lose!";
+      winnerMsg.classList.add("lose");
+    }
   }
 }
 
@@ -281,7 +278,9 @@ function isShipSunk(board, x, y) {
 resetBtn.addEventListener("click", resetGame);
 
 function resetGame() {
+  document.querySelector(".game-instructions").textContent = "Place your ships";
   winnerMsg.textContent = "";
+  winnerMsg.classList.remove("lose");
 
   playerBoard = new GameBoard();
   cpuBoard = new GameBoard();
@@ -307,7 +306,8 @@ function startGame() {
   loop.setupBoards();
   renderCpuBoard(cpuBoard, cpuContainer);
   renderFleetStatus(cpuBoard, "cpu-fleet");
-  console.log("The game has began! Attack your opponent board!");
+  document.querySelector(".game-instructions").textContent =
+    "All ships are placed. Attack your opponent's board!";
 }
 
 function enableManualPlacement() {
