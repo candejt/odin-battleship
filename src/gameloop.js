@@ -16,6 +16,7 @@ export default function gameLoop(player, cpu, playerBoard, cpuBoard) {
           const orientation = Math.random() < 0.5 ? "horizontal" : "vertical";
           const x = Math.floor(Math.random() * 10);
           const y = Math.floor(Math.random() * 10);
+
           try {
             board.placeShip(ship, [x, y], orientation);
             placed = true;
@@ -23,7 +24,6 @@ export default function gameLoop(player, cpu, playerBoard, cpuBoard) {
         }
       }
     };
-    placeRandomShips(playerBoard);
     placeRandomShips(cpuBoard);
   };
 
@@ -34,21 +34,22 @@ export default function gameLoop(player, cpu, playerBoard, cpuBoard) {
   loop.playTurn = (x, y) => {
     if (loop.winner) return;
 
-    if (loop.currentPlayer === player) {
-      cpuBoard.receiveAttack([x, y]);
-      if (cpuBoard.allSunk()) {
-        loop.winner = player;
-        return;
-      }
-    } else {
-      cpu.randomAttack(playerBoard);
-      if (playerBoard.allSunk()) {
-        loop.winner = cpu;
-        return;
-      }
+    cpuBoard.receiveAttack([x, y]);
+
+    if (cpuBoard.allSunk()) {
+      loop.winner = player;
+      return;
+    }
+
+    loop.nextTurn();
+
+    cpu.randomAttack(playerBoard);
+
+    if (playerBoard.allSunk()) {
+      loop.winner = cpu;
+      return;
     }
     loop.nextTurn();
   };
-
   return loop;
 }
