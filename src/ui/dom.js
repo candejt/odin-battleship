@@ -1,11 +1,25 @@
 import GameBoard from "../gameBoard.js";
 import gameLoop from "../gameloop.js";
 import { Player, Computer } from "../player.js";
+import Ship from "../ship.js";
+
+const playerContainer = document.getElementById("player-container");
+const cpuContainer = document.getElementById("cpu-container");
+let playerBoard = new GameBoard();
+let cpuBoard = new GameBoard();
+let player = new Player("Player");
+let cpu = new Computer("CPU");
+let loop;
+let placementState = {
+  currentShipIndex: 0,
+  orientation: "horizontal",
+};
+const ships = [{ size: 5 }, { size: 4 }, { size: 3 }, { size: 3 }, { size: 2 }];
 
 const rotateBtn = document.createElement("button");
 rotateBtn.id = "rotate-btn";
 rotateBtn.textContent = "Rotate";
-document.body.appendChild(rotateBtn);
+document.querySelector(".button-container").appendChild(rotateBtn);
 
 const winnerMsg = document.createElement("div");
 winnerMsg.id = "winner-message";
@@ -14,7 +28,7 @@ document.body.appendChild(winnerMsg);
 const resetBtn = document.createElement("button");
 resetBtn.id = "reset-btn";
 resetBtn.textContent = "Reset";
-document.body.appendChild(resetBtn);
+document.querySelector(".button-container").appendChild(resetBtn);
 
 //render boards
 function createPlayerGrid(container) {
@@ -37,14 +51,13 @@ function renderPlayerBoard(board, container) {
 
     const tile = board.grid[y][x];
 
+    const hasShip = tile && tile.length !== undefined;
+
     cell.classList.toggle("ship", tile.hasShip);
     cell.classList.toggle("hit", tile.isHit);
     cell.classList.toggle("miss", tile.isMiss);
   });
 }
-
-createPlayerGrid(playerContainer);
-renderPlayerBoard(playerBoard, playerContainer);
 
 function createCpuGrid(container) {
   for (let y = 0; y < 10; y++) {
@@ -71,28 +84,13 @@ function renderCpuBoard(board, container) {
   });
 }
 
+createPlayerGrid(playerContainer);
 createCpuGrid(cpuContainer);
-renderCpyBoard(cpuBoard, cpuContainer);
+
+renderCpuBoard(cpuBoard, cpuContainer);
+renderPlayerBoard(playerBoard, playerContainer);
 
 //place ship
-let placementState = {
-  currentShipIndex: 0,
-  orientation: "horizontal",
-};
-
-const ships = [
-  { size: 4 },
-  { size: 3 },
-  { size: 3 },
-  { size: 2 },
-  { size: 2 },
-  { size: 2 },
-  { size: 1 },
-  { size: 1 },
-  { size: 1 },
-  { size: 1 },
-];
-
 function getShipPositions(x, y, size, orientation) {
   const positions = [];
 
@@ -110,19 +108,20 @@ function isValidPlacement(board, positions) {
   for (const pos of positions) {
     const { x, y } = pos;
 
-    if (x < 0 || x >= board.size || y < 0 || y >= board.size) return false;
+    if (x < 0 || x >= 10 || y < 0 || y >= 10) return false;
 
     if (board.grid[y][x].hasShip) return false;
-
-    return true;
   }
+  return true;
 }
 
 function placeShip(board, positions) {
-  for (const pos of positions) {
-    const { x, y } = pos;
-    board.grid[y][x].hasShip = true;
-  }
+  const currentShipData = ships[placementState.currentShipIndex];
+  const realShip = new Ship(currentShipData.size);
+
+  const startCoord = [positions[0].x, positions[0].y];
+
+  board.placeShip(realShip, startCoord, placementState.orientation);
 }
 
 function handlePlacementClick(event) {
@@ -147,12 +146,14 @@ function handlePlacementClick(event) {
 
   placeShip(playerBoard, positions);
   renderPlayerBoard(playerBoard, playerContainer);
+  renderFleetStatus(playerBoard, "player-fleet");
 
   placementState.currentShipIndex++;
 
   if (placementState.currentShipIndex >= ships.length) {
     playerContainer.removeEventListener("click", handlePlacementClick);
     console.log("All ships are placed");
+    startGame();
   }
 }
 //Rotate
@@ -177,13 +178,16 @@ function setupHoverPreview(playerBoard, playerContainer) {
   playerContainer.addEventListener("mouseover", (event) => {
     clearHoverPreview(playerContainer);
 
+    if (placementState.currentShipIndex >= ships.length) return;
+
+    const ship = ships[placementState.currentShipIndex];
+
     const cell = event.target;
-    if (!cell.classList.contains("cells")) return;
+    if (!cell.classList.contains("cell")) return;
 
     const x = Number(cell.dataset.x);
     const y = Number(cell.dataset.y);
 
-    const ship = ships[placementState.currentShipIndex];
     const positions = getShipPositions(
       x,
       y,
@@ -211,7 +215,7 @@ function clearHoverPreview(container) {
   container
     .querySelectorAll(".preview-valid, .preview-invalid")
     .forEach((cell) => {
-      cell.classList.remove("preview-valid, preview-invalid");
+      cell.classList.remove("preview-valid", "preview-invalid");
     });
 }
 
@@ -219,7 +223,7 @@ function clearHoverPreview(container) {
 cpuContainer.addEventListener("click", handlePlayerShot);
 
 function handlePlayerShot(event) {
-  if (loop.winner) return;
+  if (!loop || loop.winner) return;
 
   const cell = event.target;
   if (!cell.classList.contains("cell")) return;
@@ -229,18 +233,14 @@ function handlePlayerShot(event) {
 
   loop.playTurn(x, y);
 
-  if (loop.currentPlayer === cpu) {
-    cpu.randomAttack(playerBoard);
-    renderPlayerBoard(playerBoard, playerContainer);
-  }
-
   renderCpuBoard(cpuBoard, cpuContainer);
   renderPlayerBoard(playerBoard, playerContainer);
 
+  renderFleetStatus(playerBoard, "player-fleet");
+  renderFleetStatus(cpuBoard, "cpu-fleet");
+
   if (loop.winner) {
-    const msg = document.getElementById("winner-message");
-    msg.textContent = loop.winner === player ? "You win!" : "You lose!";
-    return;
+    winnerMsg.textContent = loop.winner === player ? "You win!" : "You lose!";
   }
 }
 
@@ -283,25 +283,31 @@ resetBtn.addEventListener("click", resetGame);
 function resetGame() {
   winnerMsg.textContent = "";
 
-  const newPlayerBoard = new GameBoard();
-  const newCpuBoard = new GameBoard();
-  const newPlayer = new Player("human");
-  const newCpu = new Computer("cpu");
+  playerBoard = new GameBoard();
+  cpuBoard = new GameBoard();
+  player = new Player("Player");
+  cpu = new Computer("CPU");
 
-  const newLoop = gameLoop(newPlayer, newCpu, newPlayerBoard, newCpuBoard);
-
-  playerBoard = newPlayerBoard;
-  cpuBoard = newCpuBoard;
-  player = newPlayer;
-  cpu = newCpu;
-  loop = newLoop;
-
-  newCpuBoard.placeRandomShips();
+  playerContainer.innerHTML = "";
+  cpuContainer.innerHTML = "";
+  createPlayerGrid(playerContainer);
+  createCpuGrid(cpuContainer);
 
   renderPlayerBoard(playerBoard, playerContainer);
   renderCpuBoard(cpuBoard, cpuContainer);
 
+  renderFleetStatus(playerBoard, "player-fleet");
+  renderFleetStatus(cpuBoard, "cpu-fleet");
+
   enableManualPlacement();
+}
+
+function startGame() {
+  loop = gameLoop(player, cpu, playerBoard, cpuBoard);
+  loop.setupBoards();
+  renderCpuBoard(cpuBoard, cpuContainer);
+  renderFleetStatus(cpuBoard, "cpu-fleet");
+  console.log("The game has began! Attack your opponent board!");
 }
 
 function enableManualPlacement() {
@@ -313,4 +319,30 @@ function enableManualPlacement() {
   setupHoverPreview(playerBoard, playerContainer);
 
   rotateBtn.disabled = false;
+}
+enableManualPlacement();
+
+//ui
+function renderFleetStatus(board, containerId) {
+  const container = document.querySelector(`#${containerId} .ships-list`);
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  board.ships.forEach((ship) => {
+    const shipElement = document.createElement("div");
+    shipElement.classList.add("ship-indicator");
+
+    if (ship.isSunk()) {
+      shipElement.classList.add("sunk");
+    }
+
+    const shipLength = ship.length || ship.size;
+    for (let i = 0; i < shipLength; i++) {
+      const dot = document.createElement("div");
+      dot.classList.add("ship-dot");
+      shipElement.appendChild(dot);
+    }
+    container.appendChild(shipElement);
+  });
 }

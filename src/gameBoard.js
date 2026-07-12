@@ -4,7 +4,13 @@ export default class GameBoard {
     this.ships = [];
     this.misses = [];
     this.attacked = new Set();
-    this.grid = Array.from({ length: 10 }, () => Array(10).fill(null));
+    this.grid = Array.from({ length: 10 }, () =>
+      Array.from({ length: 10 }, () => ({
+        hasShip: false,
+        isHit: false,
+        isMiss: false,
+      })),
+    );
   }
 
   placeShip(ship, start, orientation) {
@@ -19,14 +25,15 @@ export default class GameBoard {
         throw new Error("Ship out of bounds");
       }
 
-      if (this.grid[cx][cy] !== null) {
+      if (this.grid[cy][cx].ship) {
         throw new Error("Ship overlap");
       }
 
       positions.push([cx, cy]);
     }
     for (const [cx, cy] of positions) {
-      this.grid[cx][cy] = ship;
+      this.grid[cy][cx].ship = ship;
+      this.grid[cy][cx].hasShip = true;
     }
     ship.positions = positions;
     this.ships.push(ship);
@@ -34,6 +41,7 @@ export default class GameBoard {
 
   receiveAttack(coord) {
     const [x, y] = coord;
+    const tile = this.grid[y][x];
 
     for (let i = 0; i < this.misses.length; i++) {
       const miss = this.misses[i];
@@ -58,14 +66,21 @@ export default class GameBoard {
         if (pos[0] === x && pos[1] === y) {
           ship.hit();
           ship.hitsPositions.push(coord);
-
           ship.isSunk();
+
+          if (tile) {
+            tile.isHit = true;
+          }
 
           return;
         }
       }
     }
     this.misses.push(coord);
+
+    if (tile) {
+      tile.isMiss = true;
+    }
   }
 
   allSunk() {

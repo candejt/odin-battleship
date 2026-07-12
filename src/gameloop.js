@@ -24,7 +24,6 @@ export default function gameLoop(player, cpu, playerBoard, cpuBoard) {
         }
       }
     };
-    placeRandomShips(playerBoard);
     placeRandomShips(cpuBoard);
   };
 
@@ -35,19 +34,21 @@ export default function gameLoop(player, cpu, playerBoard, cpuBoard) {
   loop.playTurn = (x, y) => {
     if (loop.winner) return;
 
-    const targetBoard = loop.currentPlayer === player ? cpuBoard : playerBoard;
-
-    loop.currentPlayer.attack([x, y], targetBoard);
+    cpuBoard.receiveAttack([x, y]);
 
     if (cpuBoard.allSunk()) {
       loop.winner = player;
       return;
     }
+
+    loop.nextTurn();
+
+    cpu.randomAttack(playerBoard);
+
     if (playerBoard.allSunk()) {
       loop.winner = cpu;
       return;
     }
-
     loop.nextTurn();
   };
   return loop;

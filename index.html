@@ -8,12 +8,39 @@
   </head>
   <body>
     <h1>Battleship</h1>
+    
+    <div class="boards-container">
+      <div>
+        <h2>Your Board</h2>
 
-    <h2>Your Board</h2>
-    <div id="player-container"></div>
+        <div class="fleet-status">
+        <div id="player-fleet">
+          <h3>Your fleet:</h3>
+          <div class="ships-list"></div>
+        </div>
+      </div>
 
-    <h2>CPU Board</h2>
-    <div id="cpu-container"></div>
+        <div id="player-container"></div>
+      </div>
+
+      <div>
+        <h2>Enemy Board</h2>
+
+        <div class="fleet-status">
+        <div id="cpu-fleet">
+          <h3>Enemy fleet:</h3>
+          <div class="ships-list"></div>
+        </div>
+      </div>
+
+        <div id="cpu-container"></div>
+      </div>
+    </div>
+
+    <div class="button-container"></div>
+
+    <div class="winner-msg"></div>
+
 
     <script type="module" src="./src/ui/index.js"></script>
   </body>
