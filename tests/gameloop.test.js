@@ -1,6 +1,6 @@
 import GameBoard from "../src/gameBoard.js";
 import gameLoop from "../src/gameloop.js";
-import { Player } from "../src/player.js";
+import { Player, Computer } from "../src/player.js";
 
 test("GameLoop places ships on both game boards at the start", () => {
   const playerBoard = new GameBoard();
