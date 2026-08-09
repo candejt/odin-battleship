@@ -165,7 +165,6 @@ h2 {
 #reset-btn {
   background: rgba(54, 70, 69, 1);
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.8);
   padding: 10px 0px;
@@ -197,7 +196,6 @@ h2 {
   flex-direction: column;
   background: rgba(54, 70, 69, 1);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 16px;
@@ -212,7 +210,7 @@ h2 {
   text-transform: uppercase;
   letter-spacing: 1px;
   margin: 0;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .ships-list {
